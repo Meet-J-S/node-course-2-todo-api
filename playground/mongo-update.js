@@ -24,6 +24,9 @@ function dbCon(err,db)
     $set:{
             completed: true
          }
+    // ,$inc:{
+    //         age: 1
+    //      }
   },
   {
     returnOriginal: false
