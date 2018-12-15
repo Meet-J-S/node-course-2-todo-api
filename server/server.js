@@ -4,6 +4,7 @@ var {Users} = require('./models/users');
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var {ObjectID} = require('mongodb');
 
 var app = express();
 app.use(bodyParser.json());
@@ -45,16 +46,43 @@ app.get('/todos',(request,response)=>
   }
 );
 
+app.get('/todos/:id',(request,response)=>
+  {
+    var id = request.params.id;
+
+    //check valid id
+    if(!ObjectID.isValid(id))
+    {
+      return response.status(404).send();
+    }
+
+    Todo.findById(id).then(
+      (todo)=>
+      {
+        if (!todo)
+        {
+            return response.status(404).send();
+        }
+        response.send({todo}); //See in Postman
+      }
+    ).catch((e)=>
+    {
+      response.status(400).send();
+    });
+
+    // response.send(request.params);
+  });
+
 app.listen(3003,()=>
 {
   console.log('Web App Started.');
 });
 
-// var newTodo = new Todo(
-//   {
-//     text: 'Cook Lunch'
-//   }
-// );
+var newTodo = new Todo(
+  {
+    text: 'Cook Dinner'
+  }
+);
 
 // var newTodo2 = new Todo(
 //   {
@@ -75,31 +103,31 @@ app.listen(3003,()=>
 //   }
 // );
 
-// newTodo.save().then(
-//   (doc)=>
-//   {
-//     console.log('Saved ToDo',doc);
-//   },
-//   (err)=>
-//   {
-//     console.log('Unable to Save',err);
-//   }
-// );
+newTodo.save().then(
+  (doc)=>
+  {
+    console.log('Saved ToDo',doc);
+  },
+  (err)=>
+  {
+    console.log('Unable to Save',err);
+  }
+);
 
-// var User1 = new Users(
-//   {
-//     email:'  mst@g.co   '
-//   }
-// );
-//
-//
-// User1.save().then(
-//   (doc)=>
-//   {
-//     console.log('Saved User',doc);
-//   },
-//   (err)=>
-//   {
-//     console.log('Unable to Save',err);
-//   }
-// );
+var User1 = new Users(
+  {
+    email:'  mst@g.co   '
+  }
+);
+
+
+User1.save().then(
+  (doc)=>
+  {
+    console.log('Saved User',doc);
+  },
+  (err)=>
+  {
+    console.log('Unable to Save',err);
+  }
+);
