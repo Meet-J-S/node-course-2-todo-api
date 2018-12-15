@@ -48,10 +48,3 @@ if(!ObjectID.isValid(id))
 //     console.log(err);
 //   }
 // );
-
-Todo.findByIdAndRemove(id).then(
-  (todo)=>
-  {
-    console.log("Removed Todo : ",todo);
-  }
-);

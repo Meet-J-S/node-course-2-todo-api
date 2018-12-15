@@ -1,3 +1,4 @@
+const _ = require('lodash');
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo');
 var {Users} = require('./models/users');
@@ -71,6 +72,78 @@ app.get('/todos/:id',(request,response)=>
     });
 
     // response.send(request.params);
+  });
+
+
+app.delete('/todos/:id',(request,response)=>
+  {
+    //get ID
+    var id = request.params.id;
+
+    //check valid id
+    if(!ObjectID.isValid(id))
+    {
+      return response.status(404).send();
+    }
+
+    Todo.findByIdAndRemove(id).then(
+      (todo)=>
+      {
+        if (!todo)
+        {
+            return response.status(404).send();
+        }
+        response.send({todo}); //See in Postman
+      }
+    ).catch((e)=>
+    {
+      response.status(400).send();
+    });
+  }
+);
+
+//Update Todo's
+
+app.patch('/todos/:id',(request,response)=>
+  {
+    var id = request.params.id;
+    var body = _.pick(request.body,['text','completed']);
+
+    //check valid id
+    if(!ObjectID.isValid(id))
+    {
+      return response.status(404).send();
+    }
+
+    if (_.isBoolean(body.completed) && body.completed)
+    {
+      body.completedAt = new Date().getTime();
+    }
+    else
+    {
+      body.completed = false;
+      body.completedAt = null;
+    }
+
+    Todo.findByIdAndUpdate(id,
+      {
+          $set: body
+      },
+      {
+        new: true
+      }
+    ).then((todo)=>
+      {
+        if (!todo)
+        {
+          return response.status(404).send();
+        }
+        response.send({todo});
+      }
+    ).catch((e)=>
+    {
+      response.status(400).send();
+    });
   });
 
 app.listen(3003,()=>
