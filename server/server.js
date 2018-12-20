@@ -104,7 +104,6 @@ app.delete('/todos/:id',(request,response)=>
 );
 
 //Update Todo's
-
 app.patch('/todos/:id',(request,response)=>
   {
     var id = request.params.id;
@@ -147,16 +146,76 @@ app.patch('/todos/:id',(request,response)=>
     });
   });
 
+//For Users :
+app.post('/users',(request,response)=>
+  {
+    var body = _.pick(request.body,['email','password']);
+    var user = new Users(body);
+
+    user.save().then(
+      ()=>
+      {
+        return user.generateAuthToken();
+      }
+    ).then(
+      (token)=>
+      {
+        response.header('x-auth',token).send(user);
+      }
+    ).catch(
+      (e)=>
+      {
+        response.status(400).send(e);
+      }
+    );
+  }
+);
+
+
+//Logging in :
+app.post('/users/login',(request,response)=>
+  {
+    var body = _.pick(request.body,['email','password']);
+
+    Users.findByCredentials(body.email,body.password).then(
+      (user)=>
+      {
+          user.generateAuthToken().then((token)=>
+            {
+              response.header('x-auth',token).send(user);
+            });
+      }
+    ).catch((e)=>
+    {
+      response.status(400).send();
+    });
+});
+
+//Log Out
+app.delete('/users/me/token',(request,response)=>
+{
+  request.user.removeToken(request.token).then(
+    ()=>
+    {
+        response.status(200).send();
+    },
+    ()=>
+    {
+      response.status(400).send();
+    }
+  );
+});
+
 app.listen(port,()=>
 {
   console.log('Web App Started.');
 });
 
-var newTodo = new Todo(
-  {
-    text: 'Cook Dinner'
-  }
-);
+// var newTodo = new Todo(
+//   {
+//     text: 'Cook Dinner'
+//   }
+// );
 
 // var newTodo2 = new Todo(
 //   {
@@ -177,31 +236,31 @@ var newTodo = new Todo(
 //   }
 // );
 
-newTodo.save().then(
-  (doc)=>
-  {
-    console.log('Saved ToDo',doc);
-  },
-  (err)=>
-  {
-    console.log('Unable to Save',err);
-  }
-);
+// newTodo.save().then(
+//   (doc)=>
+//   {
+//     console.log('Saved ToDo',doc);
+//   },
+//   (err)=>
+//   {
+//     console.log('Unable to Save',err);
+//   }
+// );
 
-var User1 = new Users(
-  {
-    email:'  mst@g.co   '
-  }
-);
-
-
-User1.save().then(
-  (doc)=>
-  {
-    console.log('Saved User',doc);
-  },
-  (err)=>
-  {
-    console.log('Unable to Save',err);
-  }
-);
+// var User1 = new Users(
+//   {
+//     email:'  mst@g.co   '
+//   }
+// );
+//
+//
+// User1.save().then(
+//   (doc)=>
+//   {
+//     console.log('Saved User',doc);
+//   },
+//   (err)=>
+//   {
+//     console.log('Unable to Save',err);
+//   }
+// );
